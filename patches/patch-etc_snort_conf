@@ -1,0 +1,165 @@
+$OpenBSD: patch-etc_snort_conf,v 1.8 2013/01/16 04:52:53 lteo Exp $
+
+reputation preprocessor disabled, still experimental
+
+load the new Snort rule files since they have been reorganized:
+http://blog.snort.org/2012/10/rule-category-reorganization-phase-3.html
+
+--- etc/snort.conf.orig	Thu Nov 15 17:54:40 2012
++++ etc/snort.conf	Thu Jan 10 23:43:15 2013
+@@ -101,17 +101,17 @@ ipvar AIM_SERVERS [64.12.24.0/23,64.12.28.0/23,64.12.1
+ # Path to your rules files (this can be a relative path)
+ # Note for Windows users:  You are advised to make this an absolute path,
+ # such as:  c:\snort\rules
+-var RULE_PATH ../rules
+-var SO_RULE_PATH ../so_rules
+-var PREPROC_RULE_PATH ../preproc_rules
++var RULE_PATH ${SYSCONFDIR}/snort/rules
++var SO_RULE_PATH ${SYSCONFDIR}/snort/so_rules
++var PREPROC_RULE_PATH ${SYSCONFDIR}/snort/preproc_rules
+ 
+ # If you are using reputation preprocessor set these
+ # Currently there is a bug with relative paths, they are relative to where snort is
+ # not relative to snort.conf like the above variables
+ # This is completely inconsistent with how other vars work, BUG 89986
+ # Set the absolute path appropriately
+-var WHITE_LIST_PATH ../rules
+-var BLACK_LIST_PATH ../rules
++var WHITE_LIST_PATH ${SYSCONFDIR}/snort/rules
++var BLACK_LIST_PATH ${SYSCONFDIR}/snort/rules
+ 
+ ###################################################
+ # Step #2: Configure the decoder.  For more information, see README.decode
+@@ -158,6 +158,7 @@ config checksum_mode: all
+ #
+ # config daq: <type>
+ # config daq_dir: <dir>
++config daq_dir: ${PREFIX}/lib/daq/
+ # config daq_mode: <mode>
+ # config daq_var: <var>
+ #
+@@ -503,12 +504,12 @@ preprocessor dnp3: ports { 20000 } \
+    check_crc
+ 
+ # Reputation preprocessor. For more information see README.reputation
+-preprocessor reputation: \
+-   memcap 500, \
+-   priority whitelist, \
+-   nested_ip inner, \
+-   whitelist $WHITE_LIST_PATH/white_list.rules, \
+-   blacklist $BLACK_LIST_PATH/black_list.rules 
++#preprocessor reputation: \
++#   memcap 500, \
++#   priority whitelist, \
++#   nested_ip inner, \
++#   whitelist $WHITE_LIST_PATH/white_list.rules, \
++#   blacklist $BLACK_LIST_PATH/black_list.rules 
+ 
+ ###################################################
+ # Step #6: Configure output plugins
+@@ -542,42 +543,93 @@ include reference.config
+ ###################################################
+ 
+ # site specific rules
+-include $RULE_PATH/local.rules
++#include $RULE_PATH/local.rules
+ 
++# Official Sourcefire VRT rules from http://www.snort.org/snort-rules/
++include $RULE_PATH/app-detect.rules
+ include $RULE_PATH/attack-responses.rules
+ include $RULE_PATH/backdoor.rules
+ include $RULE_PATH/bad-traffic.rules
+ include $RULE_PATH/blacklist.rules
+ include $RULE_PATH/botnet-cnc.rules
++include $RULE_PATH/browser-chrome.rules
++include $RULE_PATH/browser-firefox.rules
++include $RULE_PATH/browser-ie.rules
++include $RULE_PATH/browser-other.rules
++include $RULE_PATH/browser-plugins.rules
++include $RULE_PATH/browser-webkit.rules
+ include $RULE_PATH/chat.rules
+ include $RULE_PATH/content-replace.rules
+ include $RULE_PATH/ddos.rules
+ include $RULE_PATH/dns.rules
+ include $RULE_PATH/dos.rules
++include $RULE_PATH/experimental.rules
++include $RULE_PATH/exploit-kit.rules
+ include $RULE_PATH/exploit.rules
++include $RULE_PATH/file-executable.rules
++include $RULE_PATH/file-flash.rules
+ include $RULE_PATH/file-identify.rules
++include $RULE_PATH/file-image.rules
++include $RULE_PATH/file-multimedia.rules
++include $RULE_PATH/file-office.rules
++include $RULE_PATH/file-other.rules
++include $RULE_PATH/file-pdf.rules
+ include $RULE_PATH/finger.rules
+ include $RULE_PATH/ftp.rules
+-include $RULE_PATH/icmp.rules
+ include $RULE_PATH/icmp-info.rules
++include $RULE_PATH/icmp.rules
+ include $RULE_PATH/imap.rules
++include $RULE_PATH/indicator-compromise.rules
++include $RULE_PATH/indicator-obfuscation.rules
++include $RULE_PATH/indicator-shellcode.rules
+ include $RULE_PATH/info.rules
++include $RULE_PATH/malware-backdoor.rules
++include $RULE_PATH/malware-cnc.rules
++include $RULE_PATH/malware-other.rules
++include $RULE_PATH/malware-tools.rules
+ include $RULE_PATH/misc.rules
+ include $RULE_PATH/multimedia.rules
+ include $RULE_PATH/mysql.rules
+ include $RULE_PATH/netbios.rules
+ include $RULE_PATH/nntp.rules
+ include $RULE_PATH/oracle.rules
++include $RULE_PATH/os-linux.rules
++include $RULE_PATH/os-other.rules
++include $RULE_PATH/os-solaris.rules
++include $RULE_PATH/os-windows.rules
+ include $RULE_PATH/other-ids.rules
+ include $RULE_PATH/p2p.rules
+ include $RULE_PATH/phishing-spam.rules
++include $RULE_PATH/policy-multimedia.rules
++include $RULE_PATH/policy-other.rules
+ include $RULE_PATH/policy.rules
++include $RULE_PATH/policy-social.rules
++include $RULE_PATH/policy-spam.rules
+ include $RULE_PATH/pop2.rules
+ include $RULE_PATH/pop3.rules
++include $RULE_PATH/protocol-finger.rules
++include $RULE_PATH/protocol-ftp.rules
++include $RULE_PATH/protocol-icmp.rules
++include $RULE_PATH/protocol-imap.rules
++include $RULE_PATH/protocol-pop.rules
++include $RULE_PATH/protocol-services.rules
++include $RULE_PATH/protocol-voip.rules
++include $RULE_PATH/pua-adware.rules
++include $RULE_PATH/pua-other.rules
++include $RULE_PATH/pua-p2p.rules
++include $RULE_PATH/pua-toolbars.rules
+ include $RULE_PATH/rpc.rules
+ include $RULE_PATH/rservices.rules
+ include $RULE_PATH/scada.rules
+ include $RULE_PATH/scan.rules
++include $RULE_PATH/server-apache.rules
++include $RULE_PATH/server-iis.rules
++include $RULE_PATH/server-mail.rules
++include $RULE_PATH/server-mssql.rules
++include $RULE_PATH/server-mysql.rules
++include $RULE_PATH/server-oracle.rules
++include $RULE_PATH/server-other.rules
++include $RULE_PATH/server-webapp.rules
+ include $RULE_PATH/shellcode.rules
+ include $RULE_PATH/smtp.rules
+ include $RULE_PATH/snmp.rules
+@@ -598,6 +650,9 @@ include $RULE_PATH/web-iis.rules
+ include $RULE_PATH/web-misc.rules
+ include $RULE_PATH/web-php.rules
+ include $RULE_PATH/x11.rules
++
++# Emerging Threats rules from http://rules.emergingthreats.net/open/snort-2.9.0/
++# include $RULE_PATH/emerging.conf
+ 
+ ###################################################
+ # Step #8: Customize your preprocessor and decoder alerts

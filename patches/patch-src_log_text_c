@@ -1,0 +1,12 @@
+$OpenBSD: patch-src_log_text_c,v 1.5 2013/01/16 04:52:53 lteo Exp $
+--- src/log_text.c.orig	Fri Sep 21 02:09:13 2012
++++ src/log_text.c	Tue Oct  9 22:18:53 2012
+@@ -71,7 +71,7 @@ extern int IsJSNormData(void *);
+ void LogTimeStamp(TextLog* log, Packet* p)
+ {
+     char timestamp[TIMEBUF_SIZE];
+-    ts_print((struct timeval*)&p->pkth->ts, timestamp);
++    ts_print((struct sf_timeval32*)&p->pkth->ts, timestamp);
+     TextLog_Puts(log, timestamp);
+ }
+ 
